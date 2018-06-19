@@ -27,12 +27,13 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.ogm.exception.core.NotFoundException;
+import org.neo4j.ogm.testutil.MultiDriverTestClass;
 import org.neo4j.test.TestGraphDatabaseFactory;
 
 /**
  * @author Michal Bachman
  */
-public class IterableUtilsTests {
+public class IterableUtilsTests extends MultiDriverTestClass {
 
 	@Test
 	public void checkContainsCollections() {
@@ -42,7 +43,7 @@ public class IterableUtilsTests {
 
 	@Test
 	public void checkContainsRealIterables() {
-		GraphDatabaseService database = new TestGraphDatabaseFactory().newImpermanentDatabase();
+		GraphDatabaseService database = getGraphDatabaseService();
 
 		Node node;
 		Long nodeId;

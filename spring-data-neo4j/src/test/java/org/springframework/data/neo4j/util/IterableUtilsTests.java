@@ -34,18 +34,6 @@ import org.neo4j.test.TestGraphDatabaseFactory;
  */
 public class IterableUtilsTests {
 
-	private static GraphDatabaseService database;
-
-	@BeforeClass
-	public static void beforeClass(){
-		database = new TestGraphDatabaseFactory().newImpermanentDatabase();
-	}
-
-	@AfterClass
-	public static void oneTimeTearDown(){
-		database.shutdown();
-	}
-
 	@Test
 	public void checkContainsCollections() {
 		assertTrue(contains(asList("a", "b"), "b"));
@@ -54,6 +42,7 @@ public class IterableUtilsTests {
 
 	@Test
 	public void checkContainsRealIterables() {
+		GraphDatabaseService database = new TestGraphDatabaseFactory().newImpermanentDatabase();
 
 		Node node;
 		Long nodeId;

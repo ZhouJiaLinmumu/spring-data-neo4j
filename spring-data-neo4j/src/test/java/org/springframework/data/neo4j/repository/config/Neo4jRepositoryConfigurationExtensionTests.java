@@ -1,5 +1,5 @@
 /*
- * Copyright (c)  [2011-2017] "Pivotal Software, Inc." / "Neo Technology" / "Graph Aware Ltd."
+ * Copyright (c)  [2011-2018] "Pivotal Software, Inc." / "Neo Technology" / "Graph Aware Ltd."
  *
  * This product is licensed to you under the Apache License, Version 2.0 (the "License").
  * You may not use this product except in compliance with the License.
@@ -44,6 +44,7 @@ import org.springframework.data.repository.config.RepositoryConfigurationExtensi
  * @author Mark Angrish
  * @author Mark Paluch
  * @author Gerrit Meier
+ * @author Michael J. Simons
  */
 public class Neo4jRepositoryConfigurationExtensionTests {
 
@@ -53,17 +54,10 @@ public class Neo4jRepositoryConfigurationExtensionTests {
 
 	public @Rule ExpectedException exception = ExpectedException.none();
 
-	private StandardAnnotationMetadata metadata = new StandardAnnotationMetadata(Config.class, true);
-
-	@Before
-	public void setup() {
-		metadata = new StandardAnnotationMetadata(Config.class, true);
-	}
-
 	@Test
 	public void registersSharedSessionCreatorBeanByDefault() {
 
-		DefaultListableBeanFactory factory = getBeanRegistry();
+		DefaultListableBeanFactory factory = getBeanRegistry(new StandardAnnotationMetadata(Config.class, true));
 
 		Iterable<String> names = Arrays.asList(factory.getBeanDefinitionNames());
 
@@ -72,7 +66,8 @@ public class Neo4jRepositoryConfigurationExtensionTests {
 
 	@Test
 	public void sessionFactoryBeanNameDefaultsToSessionFactory() {
-		BeanDefinition beanDefinition = getBeanRegistry().getBeanDefinition(SHARED_SESSION_CREATOR_BEAN_NAME);
+		BeanDefinition beanDefinition = getBeanRegistry(new StandardAnnotationMetadata(Config.class, true))
+				.getBeanDefinition(SHARED_SESSION_CREATOR_BEAN_NAME);
 
 		RuntimeBeanReference sessionFactoryBean = (RuntimeBeanReference) beanDefinition.getConstructorArgumentValues()
 				.getIndexedArgumentValue(0, RuntimeBeanReference.class).getValue();
@@ -84,9 +79,8 @@ public class Neo4jRepositoryConfigurationExtensionTests {
 
 	@Test
 	public void customSessionFactoryBeanNameWillGetUsed() {
-		metadata = new StandardAnnotationMetadata(CustomSessionRefConfig.class, true);
-
-		BeanDefinition beanDefinition = getBeanRegistry().getBeanDefinition(SHARED_SESSION_CREATOR_BEAN_NAME);
+		BeanDefinition beanDefinition = getBeanRegistry(new StandardAnnotationMetadata(CustomSessionRefConfig.class, true))
+				.getBeanDefinition(SHARED_SESSION_CREATOR_BEAN_NAME);
 
 		RuntimeBeanReference sessionFactoryBean = (RuntimeBeanReference) beanDefinition.getConstructorArgumentValues()
 				.getIndexedArgumentValue(0, RuntimeBeanReference.class).getValue();
@@ -117,7 +111,7 @@ public class Neo4jRepositoryConfigurationExtensionTests {
 		factoryBean.createInstance().afterPropertiesSet();
 	}
 
-	private DefaultListableBeanFactory getBeanRegistry() {
+	private DefaultListableBeanFactory getBeanRegistry(final StandardAnnotationMetadata metadata) {
 		AnnotationConfigApplicationContext factory = new AnnotationConfigApplicationContext();
 
 		factory.registerBean(DEFAULT_SESSION_FACTORY_BEAN_NAME, SessionFactory.class, "dummypackage");

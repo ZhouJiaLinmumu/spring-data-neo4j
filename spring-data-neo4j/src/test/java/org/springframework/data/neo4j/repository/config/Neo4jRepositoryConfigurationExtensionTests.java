@@ -12,18 +12,20 @@
  */
 package org.springframework.data.neo4j.repository.config;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItems;
+import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentMatchers;
 import org.neo4j.ogm.metadata.ClassInfo;
 import org.neo4j.ogm.metadata.MetaData;
 import org.neo4j.ogm.session.SessionFactory;
@@ -100,7 +102,7 @@ public class Neo4jRepositoryConfigurationExtensionTests {
 
 		Set<ClassInfo> managedTypes = Collections.singleton(classInfo);
 
-		when(context.getBean(SessionFactory.class)).thenReturn(sessionFactory);
+		when(context.getBean(any(String.class), eq(SessionFactory.class))).thenReturn(sessionFactory);
 		when(sessionFactory.metaData()).thenReturn(metaData);
 		when(metaData.persistentEntities()).thenReturn(managedTypes);
 		when(classInfo.name()).thenReturn("Test");

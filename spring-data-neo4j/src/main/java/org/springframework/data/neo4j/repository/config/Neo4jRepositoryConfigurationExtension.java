@@ -1,5 +1,5 @@
 /*
- * Copyright (c)  [2011-2017] "Pivotal Software, Inc." / "Neo Technology" / "Graph Aware Ltd."
+ * Copyright (c)  [2011-2018] "Pivotal Software, Inc." / "Neo Technology" / "Graph Aware Ltd."
  *
  * This product is licensed to you under the Apache License, Version 2.0 (the "License").
  * You may not use this product except in compliance with the License.
@@ -49,11 +49,12 @@ import org.springframework.util.StringUtils;
  * @author Mark Angrish
  * @author Mark Paluch
  * @author Gerrit Meier
+ * @author Michael J. Simons
  */
 public class Neo4jRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 
 	private static final String DEFAULT_TRANSACTION_MANAGER_BEAN_NAME = "transactionManager";
-	private static final String DEFAULT_SESSION_FACTORY_BEAN_NAME = "sessionFactory";
+	static final String DEFAULT_SESSION_FACTORY_BEAN_NAME = "sessionFactory";
 	private static final String NEO4J_MAPPING_CONTEXT_BEAN_NAME = "neo4jMappingContext";
 	private static final String ENTITY_INSTANTIATOR_CONFIGURATION_BEAN_NAME = "neo4jOgmEntityInstantiatorConfigurationBean";
 	private static final String ENABLE_DEFAULT_TRANSACTIONS_ATTRIBUTE = "enableDefaultTransactions";
@@ -171,7 +172,7 @@ public class Neo4jRepositoryConfigurationExtension extends RepositoryConfigurati
 		registerIfNotAlreadyRegistered(createSharedSessionCreatorBeanDefinition(config), registry,
 				NEO4J_SHARED_SESSION_CREATOR_BEAN_NAME, source);
 
-		registerIfNotAlreadyRegistered(new RootBeanDefinition(Neo4jMappingContextFactoryBean.class), registry,
+		registerIfNotAlreadyRegistered(createNeo4jMappingContextFactoryBeanDefinition(config), registry,
 				NEO4J_MAPPING_CONTEXT_BEAN_NAME, source);
 
 		registerIfNotAlreadyRegistered(new RootBeanDefinition(Neo4jPersistenceExceptionTranslator.class), registry,
@@ -186,17 +187,22 @@ public class Neo4jRepositoryConfigurationExtension extends RepositoryConfigurati
 	}
 
 	private AbstractBeanDefinition createSharedSessionCreatorBeanDefinition(RepositoryConfigurationSource config) {
+		return BeanDefinitionBuilder
+				.rootBeanDefinition(SharedSessionCreator.class, "createSharedSession")
+				.addConstructorArgReference(getSessionFactoryBeanName(config))
+				.getBeanDefinition();
+	}
 
-		String sessionFactoryRefPropertyName = "sessionFactoryRef";
-		String sessionFactoryBeanName = config.getAttribute(sessionFactoryRefPropertyName)
+	private AbstractBeanDefinition createNeo4jMappingContextFactoryBeanDefinition(RepositoryConfigurationSource config) {
+		return BeanDefinitionBuilder
+				.rootBeanDefinition(Neo4jMappingContextFactoryBean.class)
+				.addConstructorArgValue(getSessionFactoryBeanName(config))
+				.getBeanDefinition();
+	}
+
+	private String getSessionFactoryBeanName(RepositoryConfigurationSource config) {
+		return Optional.of("sessionFactoryRef").flatMap(config::getAttribute)
 				.orElse(DEFAULT_SESSION_FACTORY_BEAN_NAME);
-
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(SharedSessionCreator.class,
-				"createSharedSession");
-		builder.addConstructorArgReference(sessionFactoryBeanName);
-
-		return builder.getBeanDefinition();
-
 	}
 
 }
